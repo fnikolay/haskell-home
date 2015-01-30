@@ -16,12 +16,10 @@ size (Node _ _ a b) = size a + size b + 1
 --Problem3
 ins :: (Ord k) => k -> v -> BST k v -> BST k v
 ins k v Empty = (Node k v Empty Empty)
-ins k v (Node key value left right) = 
-	if(k<key)
-		then ins k v left
-	else if(k>key)
-		then ins k v right
-		else (Node key v left right)
+ins k v (Node key value left right) 
+	| k<key = ins k v left
+	| k>key = ins k v right
+    | otherwise = (Node key v left right)
 
 --Problem4
 instance (Show v) => Show (BST k v) where
