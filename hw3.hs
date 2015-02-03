@@ -1,8 +1,13 @@
+import Data.List
 
-data BST k v = Empty |
-               Node k v (BST k v) (BST k v)
+class Json a where
+  toJson :: a -> JSON
+  fromJson :: JSON -> a
+
 
 --Problem1
+data BST k v = Empty |
+               Node k v (BST k v) (BST k v)
 
 val :: BST k v -> Maybe v
 val Empty = Nothing
@@ -25,3 +30,27 @@ ins k v (Node key value left right)
 instance (Show v) => Show (BST k v) where
   show Empty = ""
   show (Node k v left right) = "("++show left ++ show v ++ show right++")"
+
+--Problem5
+data JSON = JStr String
+          | JNum Double
+          | JArr [JSON]
+          | JObj [(String, JSON)]
+
+instance Show JSON where
+  show (JStr s) = show s
+  show (JNum n) = show n
+  show (JArr a) = "["++intercalate "," (map show a)++"]"
+  --show (JObj o) = intercalate "," (map show((map (++":") (map fst o))))
+  --show (JObj o) = show (fst (unzip o)++(snd (unzip o)))
+
+
+--Problem6
+instance Json Double where
+    toJson d = JNum d
+    fromJson (JNum d) = d
+
+instance (Json a) => Json [a] where 
+    toJson xs = JArr (map toJson xs)
+    fromJson (JArr xs) = map (fromJson) xs
+
