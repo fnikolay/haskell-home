@@ -22,9 +22,9 @@ size (Node _ _ a b) = size a + size b + 1
 ins :: (Ord k) => k -> v -> BST k v -> BST k v
 ins k v Empty = (Node k v Empty Empty)
 ins k v (Node key value left right) 
-	| k<key = ins k v left
-	| k>key = ins k v right
-    | otherwise = (Node key v left right)
+	| k<key = Node key value (ins k v left) right
+	| k>key = Node key value left (ins k v right)
+	| otherwise = Node k v left right
 
 --Problem4
 instance (Show v) => Show (BST k v) where
@@ -42,8 +42,6 @@ instance Show JSON where
   show (JNum n) = show n
   show (JArr a) = "["++intercalate "," (map show a)++"]"
   --show (JObj o) = intercalate "," (map show((map (++":") (map fst o))))
-  --show (JObj o) = show (fst (unzip o)++(snd (unzip o)))
-
 
 --Problem6
 instance Json Double where
