@@ -16,7 +16,7 @@ descendants(X,Y) :- parent(X, Z) , descendants(Z, Y).
 descendants(X,Y) :- parent(X, Y).
 
 /** Problem 10: */
-siblings(X,Y) :- (X\=Y) , (parent(Z,X) , parent(Z,Y)).
+siblings(X,Y) :- (X\=Y) , (parent(Z,X) , parent(Z,Y)),!.
 
 /** Problem 11: */
 %    ASCII-ART for the NFA:
@@ -39,8 +39,6 @@ transition(q3,q3,a).
 accepting(q2).
 accepting(q3).
 
-%accepts(State, _) :- accepting(State).
 accepts(State, InputList) :- InputList = [Head|Tail] ->
 							(transition(State, Next, Head),
 							accepts(Next, Tail)) ; accepting(State).
-%p([H|T], H, T).
