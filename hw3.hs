@@ -41,7 +41,7 @@ instance Show JSON where
   show (JStr s) = show s
   show (JNum n) = show n
   show (JArr a) = "["++intercalate "," (map show a)++"]"
-  --show (JObj o) = intercalate "," (map show((map (++":") (map fst o))))
+  show (JObj o) = "{"++intercalate "," (map show((map (++":") (map fst o))))++"}"
 
 --Problem6
 instance Json Double where
