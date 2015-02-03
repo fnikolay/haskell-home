@@ -39,5 +39,8 @@ transition(q3,q3,a).
 accepting(q2).
 accepting(q3).
 
-%accepts(State, InputList) :- 
-p([H|T], H, T).
+accepts(State, _) :- accepting(State).
+accepts(State, InputList) :- InputList = [Head|Tail],
+							transition(State, Next, Head),
+							accepts(Next, Tail).
+%p([H|T], H, T).
