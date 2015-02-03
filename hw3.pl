@@ -14,3 +14,30 @@ grandma(X,Y) :- mother(X, Z) , parent(Z, Y).
 /** Problem 9: */
 descendants(X,Y) :- parent(X, Z) , descendants(Z, Y).
 descendants(X,Y) :- parent(X, Y).
+
+/** Problem 10: */
+siblings(X,Y) :- (X\=Y) , (parent(Z,X) , parent(Z,Y)).
+
+/** Problem 11: */
+%    ASCII-ART for the NFA:
+%
+%    (q0)  ---a-->  (q1)  ---b-->  (q2*)
+%     |
+%     a
+%     |
+%     V  / --<-- \
+%    (q3*)        a
+%        \ -->-- /
+
+%  Transition relation:
+transition(q0,q1,a).
+transition(q1,q2,b).
+transition(q0,q3,a).
+transition(q3,q3,a).
+
+%  Accepting states:
+accepting(q2).
+accepting(q3).
+
+%accepts(State, InputList) :- 
+p([H|T], H, T).
