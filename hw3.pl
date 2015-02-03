@@ -9,7 +9,7 @@ mother(martha, peggy).
 /** Problem 8: */
 %parent defines a child of a mother or father
 parent(X,Y) :- (father(X, Y) ; mother(X, Y)).
-grandma(X,Y) :- mother(X, Z) , parent(Z, Y).
+grandma(X,Y) :- mother(X, Z) , parent(Z, Y),!.
 
 /** Problem 9: */
 descendants(X,Y) :- parent(X, Z) , descendants(Z, Y).
@@ -39,8 +39,8 @@ transition(q3,q3,a).
 accepting(q2).
 accepting(q3).
 
-accepts(State, _) :- accepting(State).
-accepts(State, InputList) :- InputList = [Head|Tail],
-							transition(State, Next, Head),
-							accepts(Next, Tail).
+%accepts(State, _) :- accepting(State).
+accepts(State, InputList) :- InputList = [Head|Tail] ->
+							(transition(State, Next, Head),
+							accepts(Next, Tail)) ; accepting(State).
 %p([H|T], H, T).
