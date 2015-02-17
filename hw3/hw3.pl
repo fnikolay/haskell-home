@@ -1,3 +1,6 @@
+%Ryan Schreiber
+%Partner: Fedor Nikolayev
+
 /** Problem 7: */
 father(al, bud).
 father(al, kelly).

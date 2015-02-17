@@ -12,11 +12,27 @@
   <form action="#">
     <input type="text" id="from" /> Celsius
     =
-    <input type="text" id="to" /> Fahrenheit
+    <input type="text" id="to" /> <select id="toUnit">
+      <option value="c">Celsius</option>
+      <option value="f">Fahrenheit</option>
+      <option value="k">Kelvin</option>
+    </select>
   </form>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js">
   </script>
   <script>
+
+  function celsToCels() {
+    $("#from").keyup(function() {
+    var cels = $("#from").val();
+    if (!cels.match(/\S/)){
+      $("#to").val("");
+    } else {
+      $("#to").val(cels);
+      console.log("called");
+    }
+  });
+  };
 
   function celsToFahr() {
     $("#from").keyup(function() {
@@ -24,12 +40,47 @@
 		if (!cels.match(/\S/)){
 			$("#to").val("");
 		} else {
-			$("#to").val((cels * 2) + 30);
+			$("#to").val((cels * 1.8) + 32);
 		}
 	});
   };
-  
-  $(celsToFahr());
+
+  function celsToKelv() {
+    $("#from").keyup(function() {
+    var cels = $("#from").val();
+    if (!cels.match(/\S/)){
+      $("#to").val("");
+    } else {
+      $("#to").val((cels * 1) + 273);
+    }
+  });
+  };
+
+  function funcSelector(){
+    $("select").change(function() {
+      var cels = $("#from").val();
+      if(this.value=="f"){
+        $("#to").val((cels * 1.8) + 32);
+        $(celsToFahr());
+      }
+      else if(this.value=="k"){
+        $("#to").val((cels * 1) + 273);
+        $(celsToKelv());
+      }
+      else{
+        $("#to").val(cels);
+        $(celsToCels());
+      }
+    });
+  };
+
+  function startConv(){
+    $(celsToCels);
+    $(funcSelector);
+  };
+
+
+  $(document).ready(startConv);
   </script>
 </body>
 </html>

@@ -1,3 +1,6 @@
+--Ryan Schreiber
+--Partner Fedor Nikolay
+
 import Data.List
 
 class Json a where
@@ -41,6 +44,7 @@ instance Show JSON where
   show (JStr s) = show s
   show (JNum n) = show n
   show (JArr a) = "["++intercalate "," (map show a)++"]"
+  --couldn't find way to add JSON portion of obj
   show (JObj o) = "{"++intercalate "," (map show((map (++":") (map fst o))))++"}"
 
 --Problem6
