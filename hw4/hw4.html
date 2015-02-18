@@ -116,6 +116,20 @@
   });
   
   //-------------------problem 9-----------------------------------//
+  
+  function UnfairDice(){};
+  UnfairDice.prototype = new Dice();
+  UnfairDice.prototype.render = function() {
+	var rand = randInt (0, 9);
+	if (rand === 0){
+	  return this.el.html(this.icons[d6() - 1]);
+	}else if(rand >= 5 && rand <= 9){
+	  return this.el.html(this.icons[5]);
+	}else{
+	  return this.el.html(this.icons[1]);
+	}
+  };
+  
   </script>
 </body>
 </html>
