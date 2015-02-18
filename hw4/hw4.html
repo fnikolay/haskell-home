@@ -23,7 +23,7 @@
     </select>
   </form>
   
- <!-- <span style="font-size:100pt" id="ShowDice"></span> -->
+  <!--<span style="font-size:100pt" id="test">"TEST"</span>-->
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js">
   </script>
@@ -74,14 +74,14 @@
   //----------------------problem 5--------------------//
   function randInt(min, max) {
     return Math.floor(Math.random() * (max-min+1) + min);
-  }
+  };
 
   //---------------------problem 6-----------------------//
   function createDice(sides){
 	  return function(){
 	    return randInt(1,sides);
-	  }
-  }
+	  };
+  };
   //---------------------problem 7------------------------//
   var d6 = createDice(6); 
   function Dice() {
@@ -91,19 +91,31 @@
     // icons as inner text.
 	//console.log(d6() - 1);
     this.icons = "⚀⚁⚂⚃⚄⚅";
-    this.el = $('<span style="font-size:100pt"/>').html(this.icons[d6() - 1]);
-  }
+	this.el = $('<span/>', {style: "font-size:100pt", class: 'd6', html: this.icons[d6() - 1]});
+    //this.el = $('<span style="font-size:100pt" id="showDice"/>').html(this.icons[d6() - 1]);
+  };
 
   Dice.prototype.render = function() {
     // updates the HTML representation by changing the icon in the
     // jQuery-wrapped element in the "this.el" property
 	return this.el.html(this.icons[d6() - 1]);
-  }
+  };
 
   Dice.prototype.roll = function() {
     // rolls this die and updates the representation
-	this.render().appendTo($("body"));
-  }
+	return this.render().appendTo($("body"));
+  };
+  //-----------------------problem 8-------------------------------//
+  var dice = new Dice();
+  dice.roll();
+  function rollDice (d){
+    d.roll();
+  };
+  $(".d6").on("click", function(){
+	rollDice(dice);
+  });
+  
+  //-------------------problem 9-----------------------------------//
   </script>
 </body>
 </html>
