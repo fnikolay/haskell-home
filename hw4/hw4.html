@@ -62,17 +62,23 @@
     }
   };
 
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max-min+1) + min);
-}
+  $("#from").keyup(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
+  $("#fromUnit").change(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
 
+  $("#to").keyup(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
+  $("#toUnit").change(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
 
-$("#from").keyup(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
-$("#fromUnit").change(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
+  //----------------------problem 5--------------------//
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max-min+1) + min);
+  }
 
-$("#to").keyup(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
-$("#toUnit").change(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
-
+  //---------------------problem 6-----------------------//
+  function createDice(sides){
+	  return function(){
+	    return randInt(1,sides);
+	  }
+  }
 
 
 
