@@ -79,6 +79,27 @@
 	    return randInt(1,sides);
 	  }
   }
+  
+  //---------------------problem 7------------------------//
+  function Dice() {
+    // creates a new instance
+    // should assign the "this.el" property to be a jQuery-wrapped
+    // <span> HTML element with the CSS class "d6" using one of the
+    // icons as inner text.
+    this.icons = "⚀⚁⚂⚃⚄⚅";
+    //this.el = 
+  }
+
+  Dice.prototype.render = function() {
+    // updates the HTML represenation by changing the icon in the
+    // jQuery-wrapped element in the "this.el" property
+  }
+
+  Dice.prototype.roll = function() {
+    // rolls this die and updates the represenation
+	var d6 = createDice(6);
+	
+  }
 
 
 
