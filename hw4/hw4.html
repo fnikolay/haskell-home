@@ -62,6 +62,11 @@
     }
   };
 
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max-min+1) + min);
+}
+
+
 $("#from").keyup(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
 $("#fromUnit").change(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
 
