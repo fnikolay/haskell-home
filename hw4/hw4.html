@@ -10,7 +10,11 @@
 </head>
 <body>
   <form action="#">
-    <input type="text" id="from" /> Celsius
+    <input type="text" id="from" /> <select id="fromUnit">
+      <option value="c">Celsius</option>
+      <option value="f">Fahrenheit</option>
+      <option value="k">Kelvin</option>
+    </select>
     =
     <input type="text" id="to" /> <select id="toUnit">
       <option value="c">Celsius</option>
@@ -22,65 +26,51 @@
   </script>
   <script>
 
-  function celsToCels() {
-    $("#from").keyup(function() {
-    var cels = $("#from").val();
-    if (!cels.match(/\S/)){
-      $("#to").val("");
-    } else {
-      $("#to").val(cels);
-      console.log("called");
+  function update(from, to, uFrom, uTo){
+    var x = from.val();
+    var uf = uFrom.val();
+    var tf = uTo.val();
+    if(uf==tf){
+      to.val(from.val());
     }
-  });
-  };
-
-  function celsToFahr() {
-    $("#from").keyup(function() {
-		var cels = $("#from").val();
-		if (!cels.match(/\S/)){
-			$("#to").val("");
-		} else {
-			$("#to").val((cels * 1.8) + 32);
-		}
-	});
-  };
-
-  function celsToKelv() {
-    $("#from").keyup(function() {
-    var cels = $("#from").val();
-    if (!cels.match(/\S/)){
-      $("#to").val("");
-    } else {
-      $("#to").val((cels * 1) + 273);
+    //convert celsius to kelvin
+    else if(uf=="c"){
+      from.val((x*1)+273.15);
+      uFrom.val("k");
+      update(from, to, uFrom, uTo);
+      uFrom.val(uf);
+      from.val(x);
+      console.log("from c")
     }
-  });
+    //convert kelvin to farenheit
+    else if(uf=="k"){
+      from.val((x*1.8)-459.67);
+      uFrom.val("f");
+      update(from, to, uFrom, uTo);
+      uFrom.val(uf);
+      from.val(x);
+      console.log("from k")
+    }
+    //convert farenheit to celsius
+    else if(uf=="f"){
+      from.val((x-32)/1.8);
+      uFrom.val("c");
+      update(from, to, uFrom, uTo);
+      uFrom.val(uf);
+      from.val(x);
+      console.log("from f")
+    }
   };
 
-  function funcSelector(){
-    $("select").change(function() {
-      var cels = $("#from").val();
-      if(this.value=="f"){
-        $("#to").val((cels * 1.8) + 32);
-        $(celsToFahr());
-      }
-      else if(this.value=="k"){
-        $("#to").val((cels * 1) + 273);
-        $(celsToKelv());
-      }
-      else{
-        $("#to").val(cels);
-        $(celsToCels());
-      }
-    });
-  };
+$("#from").keyup(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
+$("#fromUnit").change(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
 
-  function startConv(){
-    $(celsToCels);
-    $(funcSelector);
-  };
+$("#to").keyup(function() {  update($("#to"), $("#from"), $("#toUnit"), $("#fromUnit")) });
+$("#toUnit").change(function() {  update($("#from"), $("#to"), $("#fromUnit"), $("#toUnit")) });
 
 
-  $(document).ready(startConv);
+
+
   </script>
 </body>
 </html>
