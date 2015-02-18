@@ -82,31 +82,27 @@
 	    return randInt(1,sides);
 	  }
   }
-  
   //---------------------problem 7------------------------//
+  var d6 = createDice(6); 
   function Dice() {
     // creates a new instance
     // should assign the "this.el" property to be a jQuery-wrapped
     // <span> HTML element with the CSS class "d6" using one of the
     // icons as inner text.
-	var d6 = createDice(6);
-	console.log(d6() - 1);
+	//console.log(d6() - 1);
     this.icons = "⚀⚁⚂⚃⚄⚅";
-    this.el = $('<span style="font-size:100pt" id="ShowDice"/>').html(this.icons[d6() - 1]).appendTo($("body"));
-	//this.el = $("body").append($('<span />').css({style='font-size:100pt'}).html(this.icons[d6() - 1]));//append(this.icons[d6]);
-	//console.log(this.el);
+    this.el = $('<span style="font-size:100pt"/>');//.appendTo($("body"));
   }
 
   Dice.prototype.render = function() {
     // updates the HTML representation by changing the icon in the
     // jQuery-wrapped element in the "this.el" property
+	return this.el.html(this.icons[d6() - 1]);
   }
 
   Dice.prototype.roll = function() {
     // rolls this die and updates the representation
-	var d6 = createDice(6);
-	var n = d6() - 1;
-	return this.icons[n];
+	this.render().appendTo($("body"));
   }
   
   Dice.prototype.rollMultiple = function(s){
