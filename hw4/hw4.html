@@ -37,7 +37,7 @@
   <!-- Main Javascript code-->
   <script>
 
-  function memoize(fn){
+  function memoize(fn){ // problem 11
     var memory = {};
     return function(){
       var arg = arguments;
@@ -116,7 +116,6 @@
 	//console.log(d6() - 1);
     this.icons = "⚀⚁⚂⚃⚄⚅";
 	this.el = $('<span/>', {style: "font-size:100pt", class: 'd6', html: this.icons[d6() - 1]});
-
 	this.el.click(this.roll.bind(this)); //problem 8
   };
 
@@ -132,7 +131,6 @@
   };
 
   //-------------------problem 9-----------------------------------//
-  
   function UnfairDice(){};
   UnfairDice.prototype = new Dice();
   UnfairDice.prototype.render = function() {
@@ -145,16 +143,42 @@
   };
   
   //---------------------problem 10-------------------------------//
+  function YatzyDice() {};
+  
+  
   function setupOne(){
 	var d = new Dice();
-	$('body').append(d.el);
+	//$('body').append(d.el);
+	return d;
   };
-
-  function restartGame(numOfDice){
+  
+  function startGame(numOfDice){
+	//return function(){
+	var darray = [];
     for (var i = 0; i < numOfDice; ++i){
-	  setupOne();
+	  var d = setupOne();
+	  $('#dice').append(d.el);
+	  darray.push(d);
+	}
+	console.log(darray.length);
+	return darray;
+	//};
+  };
+  
+  //start the game with 5 dice
+  var five = startGame(5);
+  //function to restart the dice. Takes in an array of instances of Dice
+  function restartGame(darray){
+    for( var i = 0; i < darray.length; ++i){
+	  darray[i].roll();
 	}
   };
+
+  $("#restart").click(function() {
+    return restartGame(five);
+  });
+  
+  
   
   </script>
 </body>
