@@ -128,7 +128,7 @@
 
   Dice.prototype.roll = function() {
     // rolls this die and updates the representation
-	return this.render().appendTo($("body"));
+	return ($('.d6')).append(this.render());
   };
 
   //-------------------problem 9-----------------------------------//
@@ -143,6 +143,19 @@
 	  return this.el.html(this.icons[5]);
 	}
   };
+  
+  //---------------------problem 10-------------------------------//
+  function setupOne(){
+	var d = new Dice();
+	$('body').append(d.el);
+  };
+
+  function restartGame(numOfDice){
+    for (var i = 0; i < numOfDice; ++i){
+	  setupOne();
+	}
+  };
+
   
   </script>
 </body>
