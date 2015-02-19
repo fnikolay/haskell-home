@@ -25,8 +25,8 @@
   
   <div>
     <button id="restart">Restart</button>
-    <p id="score">Score: _ (_ dice with _ dots each)</p>
-    <p id="rolls">_ rolls left</p>
+    <p id="score">Score: <span id="scr">_</span> (<span id="ndice">_</span> dice with <span id="ndots">_</span> dots each)</p>
+    <p id="rolls"><span id="rl">_</span> rolls left</p>
     <div id="dice"></div>
   </div>
   
@@ -115,19 +115,23 @@
     // icons as inner text.
 	//console.log(d6() - 1);
     this.icons = "⚀⚁⚂⚃⚄⚅";
-	this.el = $('<span/>', {style: "font-size:100pt", class: 'd6', html: this.icons[d6() - 1]});
+	this.iconVal = d6() - 1;
+	//console.log(this.iconVal);
+	this.el = $('<span/>', {style: "font-size:100pt", class: 'd6', html: this.icons[this.iconVal]});
 	this.el.click(this.roll.bind(this)); //problem 8
   };
 
   Dice.prototype.render = function() {
     // updates the HTML representation by changing the icon in the
     // jQuery-wrapped element in the "this.el" property
-	return this.el.html(this.icons[d6() - 1]);
+	this.iconVal = d6() - 1;
+	//console.log(this.iconVal);
+	return this.el.html(this.icons[this.iconVal]);
   };
 
   Dice.prototype.roll = function() {
     // rolls this die and updates the representation
-	return ($('.d6')).append(this.render());
+	return $('.d6').append(this.render());
   };
 
   //-------------------problem 9-----------------------------------//
@@ -143,7 +147,13 @@
   };
   
   //---------------------problem 10-------------------------------//
+
   function YatzyDice() {};
+  YatzyDice.prototype = new Dice();
+  
+  //YatzyDice.prototype.roll(){
+    //return $('.d6').append(this.render());
+  //};
   
   
   function setupOne(){
@@ -157,6 +167,7 @@
 	var darray = [];
     for (var i = 0; i < numOfDice; ++i){
 	  var d = setupOne();
+	  console.log(d.iconVal);
 	  $('#dice').append(d.el);
 	  darray.push(d);
 	}
@@ -174,6 +185,8 @@
 	}
   };
 
+  $("#scr").text(3);
+  
   $("#restart").click(function() {
     return restartGame(five);
   });
