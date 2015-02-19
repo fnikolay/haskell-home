@@ -36,6 +36,23 @@
   </script>
   <!-- Main Javascript code-->
   <script>
+
+  function memoize(fn){
+    var memory = {};
+    return function(){
+      var arg = arguments;
+      //result has already been computed
+      if(memory[JSON.stringify(arg)] !== undefined){
+        return memory[JSON.stringify(arg)];
+      }
+
+      //compute result and put it into memory
+      var result = fn.apply(this, arg);
+      memory[JSON.stringify(arg)] = result;
+      return result
+    };
+  }
+
   function update(from, to, uFrom, uTo){
     var x = from.val();
     var uf = uFrom.val();
