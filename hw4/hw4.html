@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <!--Problem 1-->
 <html>
 <head>
@@ -26,7 +25,7 @@
   <div>
     <button id="restart">Restart</button>
     <p id="score">Score: <span id="scr">_</span> (<span id="ndice">_</span> dice with <span id="ndots">_</span> dots each)</p>
-    <p id="rolls"><span id="rl">_</span> rolls left</p>
+    <p id="rolls"><span id="rl">5</span> rolls left</p>
     <div id="dice"></div>
   </div>
   
@@ -116,7 +115,6 @@
 	this.d6 = createDice(6); 
     this.icons = "⚀⚁⚂⚃⚄⚅";
 	this.iconVal = this.d6() - 1;
-	//console.log(this.iconVal);
 	this.el = $('<span/>', {style: "font-size:100pt", class: 'd6', html: this.icons[this.iconVal]});
 	this.el.click(this.roll.bind(this)); //problem 8
   };
@@ -125,7 +123,6 @@
     // updates the HTML representation by changing the icon in the
     // jQuery-wrapped element in the "this.el" property
 	this.iconVal = this.d6() - 1;
-	//console.log(this.iconVal);
 	return this.el.html(this.icons[this.iconVal]);
   };
 
@@ -151,53 +148,108 @@
   //---------------------problem 10-------------------------------//
   function YatzyDice() {
   	  Dice.call(this);
-	  this.total = 5;
 	};
   //YatzyDice.prototype = Object.create(Dice.prototype);
   YatzyDice.prototype = new Dice();
 
-
+  //class for the yatzy game, it holds an array of 5 dice objects
+  //and count of clicks.
+  function Yatzy(){
+    this.arrayOfDice = startGame(5);
+	this.total = 5;
+  };
+  Yatzy.prototype.clicked = function() {
+    if(total > 0){
+		var arr = calculateArray(this.arrayOfDice);
+	    updateValues(arr);
+	    this.total-=1;
+	}
+  };
   
-  //YatzyDice.prototype.roll(){
-    //return $('.d6').append(this.render());
-  //};
   
+  //sets up one dice
   function setupOne(){
 	var d = new YatzyDice();
 	return d;
   };
   
+  //initialize the game with the numOfDice
+  //returns an array of dice
   function startGame(numOfDice){
 	//return function(){
 	var darray = [];
     for (var i = 0; i < numOfDice; ++i){
 	  var d = setupOne();
-	  console.log(d.iconVal);
 	  $('#dice').append(d.el);
 	  darray.push(d);
 	}
-	console.log(darray.length);
 	return darray;
 	//};
   };
   
-  //start the game with 5 dice
-  var five = startGame(5);
-  //function to restart the dice. Takes in an array of instances of Dice
-  function restartGame(darray){
-    for( var i = 0; i < darray.length; ++i){
-	  darray[i].roll();
+  function calculateArray(darray){
+    var diceValues = [];
+    for (var i = 0; i < darray.length; ++i){
+	  diceValues.push(darray[i].iconVal);
 	}
+	var sortedArray = diceValues.sort();
+	var arrayOfVals = [];
+    var arrayOfCount = [];
+    var count = 1;
+    for (var j = 0; j < sortedArray.length; ++j) {
+      if (sortedArray[j] == sortedArray[j+1]) {
+	    count++;
+	  }else{
+	    var diction = [count, sortedArray[j] + 1];
+	    arrayOfVals.push(diction);
+		count = 1;
+	  }
+    }
+	var sortedByamount = arrayOfVals.sort();
+	return sortedByamount[sortedByamount.length - 1];
   };
+  
+  function updateValues(arr){
+	var score = arr[0] * arr[1];
+	$("#scr").text(score);
+	$("#ndice").text(arr[0]);
+	$("#ndots").text(arr[1]);
+  }
+  
+  //function to restart the dice. Takes in an array of instances of Dice
+  function restartGame(d){
+    //var newd = new Yatzy();
+    for( var i = 0; i < d.arrayOfDice.length; ++i){
+	  d.arrayOfDice[i].roll();
+	  //darray[i].total = 6;
+	}
+	clickedDice(d, true);
+  };
+  
+  function clickedDice(di, isRestart){
+    if( isRestart ){
+	  di.total = 5;
+	}else{
+	  di.total-=1;
+	}
+	$("#rl").text(di.total);
+    var arr = calculateArray(di.arrayOfDice);
+	updateValues(arr);
+  }
 
-  $("#scr").text(3);
+  //start the game with 5 dice
+  var five = new Yatzy();
+  updateValues(calculateArray(five.arrayOfDice));
+  
+  $("#dice").click(function() {
+    if (five.total > 0){
+      return clickedDice(five, false);
+	}
+  });
   
   $("#restart").click(function() {
     return restartGame(five);
   });
-  
-  
-  
   </script>
 </body>
 </html>
