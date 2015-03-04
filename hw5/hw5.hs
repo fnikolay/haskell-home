@@ -4,6 +4,7 @@
 -- Necessary imports
 import Control.Applicative ((<$>),liftA,liftA2)
 import Data.Map
+import Data.Char
 import Text.Parsec
 import Text.Parsec.Expr
 import Text.Parsec.Language (emptyDef)
@@ -126,7 +127,30 @@ applyOp Times       = liftIII (*)
 applyOp GreaterThan = liftIIB (>)
 applyOp Equals      = liftIIB (==)
 applyOp LessThan    = liftIIB (<)
+{-
+instance Show Value where
+  show (IntVal i) = i
+  show (BoolVal b)
+    | b == True = "True"
+	| b == False = "False"
 
+instance Show Op where
+  show (Plus) = "+"         --  +  :: Int -> Int -> Int
+  show (Minus) = "-"        --  -  :: Int -> Int -> Int
+  show (Times) = "*"        --  *  :: Int -> Int -> Int
+  show (GreaterThan) = ">"  --  >  :: Int -> Int -> Bool
+  show (Equals) = "=="      --  == :: Int -> Int -> Bool
+  show (LessThan) = "<"     --  <  :: Int -> Int -> Bool
+
+instance Show Expression where
+  show (Var Variable) = Variable                   -- e.g. x
+  --Val Value                       -- e.g. 2
+  --BinOp Op Expression Expression  -- e.g. x + 3
+  --Assignment Variable Expression  -- e.g. x = 3
+
+instance Show Statement where
+  show (Expr Expression) = Expression
+-}
 -- Parse and print (pp) the given WHILE programs
 pp :: String -> IO ()
 pp input = case (parse stmtParser "" input) of
