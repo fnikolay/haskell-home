@@ -127,12 +127,12 @@ applyOp Times       = liftIII (*)
 applyOp GreaterThan = liftIIB (>)
 applyOp Equals      = liftIIB (==)
 applyOp LessThan    = liftIIB (<)
-{-
+
 instance Show Value where
-  show (IntVal i) = i
+  show (IntVal i) = show i
   show (BoolVal b)
-    | b == True = "True"
-	| b == False = "False"
+    | b == True = "true"
+    | b == False = "false"
 
 instance Show Op where
   show (Plus) = "+"         --  +  :: Int -> Int -> Int
@@ -143,14 +143,18 @@ instance Show Op where
   show (LessThan) = "<"     --  <  :: Int -> Int -> Bool
 
 instance Show Expression where
-  show (Var Variable) = Variable                   -- e.g. x
-  --Val Value                       -- e.g. 2
-  --BinOp Op Expression Expression  -- e.g. x + 3
-  --Assignment Variable Expression  -- e.g. x = 3
+  show (Var v) = v                           -- e.g. x
+  show (Val v) = show v                       -- e.g. 2
+  show (BinOp op exp1 exp2)  = show exp1 ++ " " ++ show op ++ " " ++ show exp2 -- e.g. x + 3
+  show (Assignment var exp1) = show var ++ " = " ++ show exp1 -- e.g. x = 3
 
 instance Show Statement where
-  show (Expr Expression) = Expression
--}
+  show (Expr e1) = show e1
+  show (If e1 s1 s2) = "if " ++ show e1 ++ " then " ++ show s1 ++ " else " ++ show s2 ++ " end"-- if e then s1 else s2 end
+  show (While e1 s1) = "while " ++ show e1 ++ " do " ++ " s1 " ++ " end"   -- while e do s end
+  show (Sequence s1 s2) = show s1 ++";" ++ show s2   -- s1; s2
+  show (Skip) = ""                         -- no-op
+
 -- Parse and print (pp) the given WHILE programs
 pp :: String -> IO ()
 pp input = case (parse stmtParser "" input) of
