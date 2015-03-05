@@ -5,6 +5,7 @@
 import Control.Applicative ((<$>),liftA,liftA2)
 import Data.Map
 import Data.Char
+import Data.Maybe
 import Text.Parsec
 import Text.Parsec.Expr
 import Text.Parsec.Language (emptyDef)
@@ -128,32 +129,6 @@ applyOp GreaterThan = liftIIB (>)
 applyOp Equals      = liftIIB (==)
 applyOp LessThan    = liftIIB (<)
 
-instance Show Value where
-  show (IntVal i) = show i
-  show (BoolVal b)
-    | b == True = "true"
-    | b == False = "false"
-
-instance Show Op where
-  show (Plus) = "+"         --  +  :: Int -> Int -> Int
-  show (Minus) = "-"        --  -  :: Int -> Int -> Int
-  show (Times) = "*"        --  *  :: Int -> Int -> Int
-  show (GreaterThan) = ">"  --  >  :: Int -> Int -> Bool
-  show (Equals) = "=="      --  == :: Int -> Int -> Bool
-  show (LessThan) = "<"     --  <  :: Int -> Int -> Bool
-
-instance Show Expression where
-  show (Var v) = v                           -- e.g. x
-  show (Val v) = show v                       -- e.g. 2
-  show (BinOp op exp1 exp2)  = show exp1 ++ " " ++ show op ++ " " ++ show exp2 -- e.g. x + 3
-  show (Assignment var exp1) = show var ++ " = " ++ show exp1 -- e.g. x = 3
-
-instance Show Statement where
-  show (Expr e1) = show e1
-  show (If e1 s1 s2) = "if " ++ show e1 ++ " then " ++ show s1 ++ " else " ++ show s2 ++ " end"-- if e then s1 else s2 end
-  show (While e1 s1) = "while " ++ show e1 ++ " do " ++ " s1 " ++ " end"   -- while e do s end
-  show (Sequence s1 s2) = show s1 ++";" ++ show s2   -- s1; s2
-  show (Skip) = ""                         -- no-op
 
 -- Parse and print (pp) the given WHILE programs
 pp :: String -> IO ()
@@ -179,3 +154,44 @@ runMonad input = proc (parse stmtParser "" input)
 
 --Homework 5
 --Problem 1:
+instance Show Value where
+  show (IntVal i) = show i
+  show (BoolVal b)
+    | b == True = "true"
+    | b == False = "false"
+
+instance Show Op where
+  show (Plus) = "+"         --  +  :: Int -> Int -> Int
+  show (Minus) = "-"        --  -  :: Int -> Int -> Int
+  show (Times) = "*"        --  *  :: Int -> Int -> Int
+  show (GreaterThan) = ">"  --  >  :: Int -> Int -> Bool
+  show (Equals) = "=="      --  == :: Int -> Int -> Bool
+  show (LessThan) = "<"     --  <  :: Int -> Int -> Bool
+
+instance Show Expression where
+  show (Var var) = var                          -- e.g. x
+  show (Val val) = show val                      -- e.g. 2
+  show (BinOp op exp1 exp2)  = show exp1 ++ " " ++ show op ++ " " ++ show exp2 -- e.g. x + 3
+  show (Assignment var exp1) = show var ++ " = " ++ show exp1 -- e.g. x = 3
+
+instance Show Statement where
+  show (Expr e1) = show e1
+  show (If e1 s1 s2) = "if " ++ show e1 ++ " then " ++ show s1 ++ " else " ++ show s2 ++ " end"-- if e then s1 else s2 end
+  show (While e1 s1) = "while " ++ show e1 ++ " do " ++ show s1 ++ " end"   -- while e do s end
+  show (Sequence s1 s2) = show s1 ++";" ++ show s2   -- s1; s2
+  show (Skip) = ""                         -- no-op
+
+--Problem 2
+--takes as input an expression and a store and returns a value.
+--If a variable is not found (e.g. because it is not initialized)
+--throw an error with the error function.
+evalE :: Expression -> Store -> (Value, Store)
+evalE (BinOp o a b) s = (applyOp o a' b', s'')
+    where (a', s')  = evalE a s
+          (b', s'') = evalE b s'
+evalE (Var x) s = (x', s)
+    where x' = fromMaybe (error "variable not found") (Data.Map.lookup x s)
+evalE (Val v) s = (v, s)
+evalE (Assignment x e) s = (e', s')
+    where (e', s'') = evalE e s
+          s' = Data.Map.insert x e' s''
