@@ -195,3 +195,19 @@ evalE (Val v) s = (v, s)
 evalE (Assignment x e) s = (e', s')
     where (e', s'') = evalE e s
           s' = Data.Map.insert x e' s''
+
+--Problem 3
+--that takes as input a statement and a store and
+--returns a possibly modified store.
+evalS :: Statement -> Store -> Store
+evalS w@(While e s1) s = case (evalE e s) of
+    (BoolVal True,s')  -> let s'' = evalS s1 s' in evalS w s''
+    (BoolVal False,s') -> s'
+    _                  -> error "Condition must be a BoolVal"
+evalS Skip s             = s
+evalS (Expr e) s         = snd (evalE e s)
+evalS (Sequence s1 s2) s = evalS s2 (evalS s1 s)
+evalS (If e s1 s2) s     = case (evalE e s) of
+    (BoolVal True,s')  -> (evalS s1 s')
+    (BoolVal False,s') -> (evalS s2 s')
+    _                  -> error "Condition must be a BoolVal" 
