@@ -210,4 +210,27 @@ evalS (Sequence s1 s2) s = evalS s2 (evalS s1 s)
 evalS (If e s1 s2) s     = case (evalE e s) of
     (BoolVal True,s')  -> (evalS s1 s')
     (BoolVal False,s') -> (evalS s2 s')
-    _                  -> error "Condition must be a BoolVal" 
+    _                  -> error "Condition must be a BoolVal"
+
+--Problem 4
+evalE_maybe :: Expression -> Store -> Maybe (Value, Store)
+evalE_maybe (BinOp o a b) s = do (a',s') <- evalE_maybe a s
+                                 (b',s'') <- evalE_maybe b s'
+                                 return (applyOp o a' b', s'')
+evalE_maybe (Var x) s = do x' <- (Data.Map.lookup x s)
+                           return (x', s)
+evalE_maybe (Val v) s = Just (v, s)
+evalE_maybe (Assignment x e) s = do (e', s') <- evalE_maybe e s
+                                    return (e', Data.Map.insert x e' s')
+
+evalS_maybe :: Statement -> Store -> Maybe Store
+evalS_maybe w@(While e s1) s =  do x <- (evalE_maybe e s)
+                                   case x of 
+                                        (BoolVal True, s')  -> do s'' <- evalS_maybe s1 s'
+                                                                  evalS_maybe w s''
+                                        (BoolVal False, s') -> return s'
+                                        _                   -> Nothing 
+--evalS_maybe Skip s             = ...
+--evalS_maybe (Sequence s1 s2) s = ...
+--evalS_maybe (Expr e) s         = ...
+--evalS_maybe (If e s1 s2) s     = ...
