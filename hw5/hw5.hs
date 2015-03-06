@@ -192,41 +192,40 @@ instance Show Statement where
   show (While e1 s1) = "while " ++ show e1 ++ " do " ++ show s1 ++ " end"   -- while e do s end
   show (For v1 e1 e2 s1) = "for " ++ v1 ++ " in " ++ show e1 ++ " to " ++ show e2 ++ " do " ++ show s1 ++ " end" --for a in 1 to 2 do 3 end
   show (Sequence s1 s2) = show s1 ++";" ++ show s2   -- s1; s2
-  show (Skip) = ""                         -- no-op
+  show (Skip) = ""                          -- no-op
 
 --Problem 2
 --takes as input an expression and a store and returns a value.
 --If a variable is not found (e.g. because it is not initialized)
 --throw an error with the error function.
 evalE :: Expression -> Store -> (Value, Store)
-evalE (BinOp o a b) s = (applyOp o a' b', s'')
-    where (a', s')  = evalE a s
+evalE (BinOp o a b) s = (applyOp o a' b', s'') where
+          (a', s')  = evalE a s
           (b', s'') = evalE b s'
-evalE (Var x) s = (x', s)
-    where x' = fromMaybe (error "variable not found") (Data.Map.lookup x s)
+evalE (Var x) s = case (Data.Map.lookup x s) of
+            Just x -> (x,s)
+            Nothing -> error "variable not found"
 evalE (Val v) s = (v, s)
-evalE (Assignment x e) s = (e', s')
-    where (e', s'') = evalE e s
+evalE (Assignment x e) s = (e', s') where
+          (e', s'') = evalE e s
           s' = Data.Map.insert x e' s''
-
 
 --Problem 3
 --that takes as input a statement and a store and
 --returns a possibly modified store.
 evalS :: Statement -> Store -> Store
 evalS w@(While e s1) s = case (evalE e s) of
-    (BoolVal True,s')  -> let s'' = evalS s1 s' in evalS w s''
-    (BoolVal False,s') -> s'
-    _                  -> error "Condition must be a BoolVal"
+                       (BoolVal True,s')  -> let s'' = evalS s1 s' in evalS w s''
+                       (BoolVal False,s') -> s'
+                       _                  -> error "Condition must be a BoolVal"
 evalS Skip s             = s
 evalS (Expr e) s         = snd (evalE e s)
-evalS (Sequence s1 s2) s = evalS s2 (evalS s1 s)
+evalS (Sequence s1 s2) s = evalS s2 s1' where
+                           s1' = (evalS s1 s)
 evalS (If e s1 s2) s     = case (evalE e s) of
-    (BoolVal True,s')  -> (evalS s1 s')
-    (BoolVal False,s') -> (evalS s2 s')
-    _                  -> error "Condition must be a BoolVal"
-
-
+                           (BoolVal True,s')  -> (evalS s1 s')
+                           (BoolVal False,s') -> (evalS s2 s')
+                           _                  -> error "Condition must be a BoolVal"
 
 --Problem 4
 evalE_maybe :: Expression -> Store -> Maybe (Value, Store)
@@ -254,3 +253,54 @@ evalS_maybe (If e s1 s2) s     = do x <- (evalE_maybe e s)
                                          (BoolVal True, s')  -> (evalS_maybe s1 s')
                                          (BoolVal False, s') -> (evalS_maybe s2 s')
                                          _                   -> Nothing
+
+--Problem 5
+newtype Imperative a = Imperative {
+    runImperative :: Store -> Maybe (a, Store)
+}
+
+instance Monad Imperative where
+    return a = Imperative (\s -> Just (a,s))
+    b >>= f = Imperative (\s -> do (v1,s1) <- (runImperative b) s
+                                   runImperative (f v1) s1)
+    fail _ = Imperative (\s -> Nothing)
+
+--helper functions
+getVar :: Variable -> Imperative Value
+getVar var = Imperative (\store -> (Data.Map.lookup var store >>= (\v -> Just (v,store))))
+
+setVar :: Variable -> Value -> Imperative Value
+setVar var val = Imperative (\store -> Just (val, Data.Map.insert var val store))
+
+evalE_monad :: Expression -> Imperative Value
+evalE_monad (BinOp o a b) = do a' <- evalE_monad a
+                               b' <- evalE_monad b
+                               return (applyOp o a' b')
+
+
+evalE_monad (Var x) = getVar x
+evalE_monad (Val v) = return v
+evalE_monad (Assignment x e) = do expr <- evalE_monad e
+                                  setVar x expr
+
+
+evalS_monad :: Statement -> Imperative ()
+
+evalS_monad w@(While e s1) =  do x <- (evalE_monad e)
+                                 case x of
+                                      (BoolVal True)  -> do evalS_monad s1
+                                      (BoolVal False) -> return ()
+                                      _               -> error "Condition must be a BoolVal"
+
+evalS_monad Skip         = return ()
+evalS_monad (Sequence s1 s2) = do (evalS_monad s1)
+                                  (evalS_monad s2)
+                                  return ()
+evalS_monad (Expr e) = do (evalE_monad e)
+                          return ()
+evalS_monad (If e s1 s2) = do x <- evalE_monad e
+                              case x of
+                                (BoolVal True)  -> evalS_monad s1
+                                (BoolVal False) -> evalS_monad s2
+                                _               -> error "Condition must be a BoolVal"
+
