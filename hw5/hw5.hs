@@ -241,12 +241,16 @@ evalE_maybe (Assignment x e) s = do (e', s') <- evalE_maybe e s
 
 evalS_maybe :: Statement -> Store -> Maybe Store
 evalS_maybe w@(While e s1) s =  do x <- (evalE_maybe e s)
-                                   case x of 
+                                   case x of
                                         (BoolVal True, s')  -> do s'' <- evalS_maybe s1 s'
                                                                   evalS_maybe w s''
                                         (BoolVal False, s') -> return s'
-                                        _                   -> Nothing 
---evalS_maybe Skip s             = ...
---evalS_maybe (Sequence s1 s2) s = ...
---evalS_maybe (Expr e) s         = ...
---evalS_maybe (If e s1 s2) s     = ...
+                                        _                   -> Nothing    
+evalS_maybe Skip s             = return s
+evalS_maybe (Sequence s1 s2) s = (evalS_maybe s1 s) >>= evalS_maybe s2
+evalS_maybe (Expr e) s         = (evalE_maybe e s) >>= return . snd
+evalS_maybe (If e s1 s2) s     = do x <- (evalE_maybe e s)
+                                    case x of
+                                         (BoolVal True, s')  -> (evalS_maybe s1 s')
+                                         (BoolVal False, s') -> (evalS_maybe s2 s')
+                                         _                   -> Nothing
