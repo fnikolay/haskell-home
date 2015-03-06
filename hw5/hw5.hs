@@ -32,6 +32,7 @@ data Expression = Var Variable                    -- e.g. x
 data Statement = Expr Expression                   -- e.g. x = 23
                | If Expression Statement Statement -- if e then s1 else s2 end
                | While Expression Statement        -- while e do s end
+               | For Variable Expression Expression Statement -- for var in e1 to e2 do s end
                | Sequence Statement Statement      -- s1; s2
                | Skip                              -- no-op
 
@@ -111,6 +112,17 @@ stmtParser1 = (Expr <$> exprParser)
               body <- stmtParser
               P.reserved lexer "end"
               return (While cond body)
+          <|> do
+              P.reserved lexer "for"
+              var <- P.identifier lexer
+              P.reserved lexer "in"
+              start <- exprParser
+              P.reserved lexer "to"
+              finish <- exprParser
+              P.reserved lexer "do"
+              body <- stmtParser
+              P.reserved lexer "end"
+              return (For var start finish body)
 
 -------- Helper functions --------
 
@@ -178,6 +190,7 @@ instance Show Statement where
   show (Expr e1) = show e1
   show (If e1 s1 s2) = "if " ++ show e1 ++ " then " ++ show s1 ++ " else " ++ show s2 ++ " end"-- if e then s1 else s2 end
   show (While e1 s1) = "while " ++ show e1 ++ " do " ++ show s1 ++ " end"   -- while e do s end
+  show (For v1 e1 e2 s1) = "for " ++ v1 ++ " in " ++ show e1 ++ " to " ++ show e2 ++ " do " ++ show s1 ++ " end" --for a in 1 to 2 do 3 end
   show (Sequence s1 s2) = show s1 ++";" ++ show s2   -- s1; s2
   show (Skip) = ""                         -- no-op
 
@@ -196,6 +209,7 @@ evalE (Assignment x e) s = (e', s')
     where (e', s'') = evalE e s
           s' = Data.Map.insert x e' s''
 
+
 --Problem 3
 --that takes as input a statement and a store and
 --returns a possibly modified store.
@@ -211,6 +225,8 @@ evalS (If e s1 s2) s     = case (evalE e s) of
     (BoolVal True,s')  -> (evalS s1 s')
     (BoolVal False,s') -> (evalS s2 s')
     _                  -> error "Condition must be a BoolVal"
+
+
 
 --Problem 4
 evalE_maybe :: Expression -> Store -> Maybe (Value, Store)
