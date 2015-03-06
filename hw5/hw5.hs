@@ -161,18 +161,18 @@ instance Show Value where
     | b == False = "false"
 
 instance Show Op where
-  show (Plus) = "+"         --  +  :: Int -> Int -> Int
-  show (Minus) = "-"        --  -  :: Int -> Int -> Int
-  show (Times) = "*"        --  *  :: Int -> Int -> Int
-  show (GreaterThan) = ">"  --  >  :: Int -> Int -> Bool
-  show (Equals) = "=="      --  == :: Int -> Int -> Bool
-  show (LessThan) = "<"     --  <  :: Int -> Int -> Bool
+  show (Plus) = "+"         
+  show (Minus) = "-"        
+  show (Times) = "*"        
+  show (GreaterThan) = ">"  
+  show (Equals) = "=="      
+  show (LessThan) = "<"  
 
 instance Show Expression where
   show (Var var) = var                          -- e.g. x
   show (Val val) = show val                      -- e.g. 2
   show (BinOp op exp1 exp2)  = show exp1 ++ " " ++ show op ++ " " ++ show exp2 -- e.g. x + 3
-  show (Assignment var exp1) = show var ++ " = " ++ show exp1 -- e.g. x = 3
+  show (Assignment var exp1) =  var ++ " = " ++ show exp1 -- e.g. x = 3
 
 instance Show Statement where
   show (Expr e1) = show e1
