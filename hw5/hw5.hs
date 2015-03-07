@@ -154,7 +154,7 @@ run parser input eval = case (parse parser "" input) of
     Left err -> print err
     Right x  -> print (eval x empty)
 
-{-  Uncomment the following function for question #5 and #6
+--  Uncomment the following function for question #5 and #6
 
 -- Parse and run the given WHILE programs using monads
 runMonad :: String -> Maybe Store
@@ -162,7 +162,7 @@ runMonad input = proc (parse stmtParser "" input)
     where proc (Right x) = snd `fmap` runImperative (evalS_monad x) empty
           proc _         = Nothing
 
--}
+
 
 --Homework 5
 --Problem 1:
@@ -304,3 +304,12 @@ evalS_monad (If e s1 s2) = do x <- evalE_monad e
                                 (BoolVal False) -> evalS_monad s2
                                 _               -> error "Condition must be a BoolVal"
 
+miniprog :: Imperative Value
+miniprog = do
+            setVar "x" (IntVal 2)
+            setVar "y" (IntVal 3)
+            a <- getVar "x"
+            b <- getVar "y"
+            return (applyOp Plus a b)
+
+--Problem 6
