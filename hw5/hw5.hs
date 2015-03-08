@@ -32,8 +32,8 @@ data Expression = Var Variable                    -- e.g. x
 data Statement = Expr Expression                   -- e.g. x = 23
                | If Expression Statement Statement -- if e then s1 else s2 end
                | While Expression Statement        -- while e do s end
-               | For Variable Expression Expression Statement -- for var in e1 to e2 do s end
                | Sequence Statement Statement      -- s1; s2
+               | For Variable Expression Expression Statement -- for var in e1 to e2 do s end
                | Skip                              -- no-op
 
 -- All binary operations
@@ -226,21 +226,29 @@ evalS (If e s1 s2) s     = case (evalE e s) of
                            (BoolVal True,s')  -> (evalS s1 s')
                            (BoolVal False,s') -> (evalS s2 s')
                            _                  -> error "Condition must be a BoolVal"
-
+evalS (For var e1 e2 s1) s = let str = evalS s1 str' --Problem 6
+                                 lst = case (evalE e2 str') of
+                                         (IntVal v, str') -> v
+                                         _                -> error "Second value in for loop not an Int"
+                                 (frst, str') = case (evalE (Assignment var e1) s) of
+                                                  (IntVal z, str') -> (z, str')
+                                                  _                -> error "First value in for loop not an Int"
+                                 expr = Val (IntVal (frst + 1))
+                                in if lst >= frst then
+                                     evalS(For var expr e2 s1) str
+                                else str'
 --Problem 4
 evalE_maybe :: Expression -> Store -> Maybe (Value, Store)
 evalE_maybe (BinOp o a b) s = do (a',s') <- evalE_maybe a s
                                  (b',s'') <- evalE_maybe b s'
                                  return (applyOp o a' b', s'')
-evalE_maybe (Var x) s = do x' <- (Data.Map.lookup x s)
-                           return (x', s)
+evalE_maybe (Var x) s = do x' <- (Data.Map.lookup x s) ; return (x', s)
 evalE_maybe (Val v) s = Just (v, s)
 evalE_maybe (Assignment x e) s = do (e', s') <- evalE_maybe e s
                                     return (e', Data.Map.insert x e' s')
 
 evalS_maybe :: Statement -> Store -> Maybe Store
-evalS_maybe w@(While e s1) s =  do x <- (evalE_maybe e s)
-                                   case x of
+evalS_maybe w@(While e s1) s =  do expr <- (evalE_maybe e s) ; case expr of
                                         (BoolVal True, s')  -> do s'' <- evalS_maybe s1 s'
                                                                   evalS_maybe w s''
                                         (BoolVal False, s') -> return s'
@@ -248,12 +256,19 @@ evalS_maybe w@(While e s1) s =  do x <- (evalE_maybe e s)
 evalS_maybe Skip s             = return s
 evalS_maybe (Sequence s1 s2) s = (evalS_maybe s1 s) >>= evalS_maybe s2
 evalS_maybe (Expr e) s         = (evalE_maybe e s) >>= return . snd
-evalS_maybe (If e s1 s2) s     = do x <- (evalE_maybe e s)
-                                    case x of
+evalS_maybe (If e s1 s2) s     = do expr <- (evalE_maybe e s) ; case expr of
                                          (BoolVal True, s')  -> (evalS_maybe s1 s')
                                          (BoolVal False, s') -> (evalS_maybe s2 s')
                                          _                   -> Nothing
-
+evalS_maybe (For var e1 e2 s1) s = do (_, state) <- evalE_maybe (Assignment var e1) s --Problem 6
+                                      (_, state') <- evalE_maybe e2 state
+                                      (expr1, state1) <- evalE_maybe (BinOp Plus e1 (Val (IntVal 1))) state'
+                                      do val <- (evalE_maybe (BinOp GreaterThan e1 e2) state1) ; case val of
+                                          (BoolVal True, x)  -> Just x
+                                          (BoolVal False, x) -> case (evalS_maybe s1 x) of
+                                                  Just x' -> evalS_maybe (For var (Val expr1) e2 s1) x'
+                                                  _       -> Nothing
+                                          _                  -> Nothing
 --Problem 5
 newtype Imperative a = Imperative {
     runImperative :: Store -> Maybe (a, Store)
@@ -276,34 +291,29 @@ evalE_monad :: Expression -> Imperative Value
 evalE_monad (BinOp o a b) = do a' <- evalE_monad a
                                b' <- evalE_monad b
                                return (applyOp o a' b')
-
-
 evalE_monad (Var x) = getVar x
 evalE_monad (Val v) = return v
-evalE_monad (Assignment x e) = do expr <- evalE_monad e
-                                  setVar x expr
-
+evalE_monad (Assignment x e) = do expr <- evalE_monad e ; setVar x expr
 
 evalS_monad :: Statement -> Imperative ()
-
-evalS_monad w@(While e s1) =  do x <- (evalE_monad e)
-                                 case x of
+evalS_monad w@(While e s1) =  do x <- (evalE_monad e) ; case x of
                                       (BoolVal True)  -> do evalS_monad s1
                                       (BoolVal False) -> return ()
                                       _               -> error "Condition must be a BoolVal"
-
 evalS_monad Skip         = return ()
-evalS_monad (Sequence s1 s2) = do (evalS_monad s1)
-                                  (evalS_monad s2)
-                                  return ()
-evalS_monad (Expr e) = do (evalE_monad e)
-                          return ()
-evalS_monad (If e s1 s2) = do x <- evalE_monad e
-                              case x of
+evalS_monad (Sequence s1 s2) = do (evalS_monad s1) ; (evalS_monad s2) ; return ()
+evalS_monad (Expr e) = do (evalE_monad e) ; return ()
+evalS_monad (If e s1 s2) = do x <- evalE_monad e ; case x of
                                 (BoolVal True)  -> evalS_monad s1
                                 (BoolVal False) -> evalS_monad s2
                                 _               -> error "Condition must be a BoolVal"
-
+evalS_monad (For var e1 e2 s1) = do evalE_monad (Assignment var e1) --Problem 6
+                                    val <- evalE_monad (BinOp GreaterThan e1 e2) ; case val of
+                                           BoolVal True  -> return ()
+                                           BoolVal False -> do evalS_monad s1
+                                                               expr <- evalE_monad (BinOp Plus e1 (Val(IntVal 1)))
+                                                               evalS_monad (For var (Val expr) e2 s1)
+                                           _             -> error "Not an Int"
 miniprog :: Imperative Value
 miniprog = do
             setVar "x" (IntVal 2)
@@ -311,5 +321,3 @@ miniprog = do
             a <- getVar "x"
             b <- getVar "y"
             return (applyOp Plus a b)
-
---Problem 6
