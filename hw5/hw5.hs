@@ -249,7 +249,7 @@ evalE_maybe (Assignment x e) s = do (val, str) <- evalE_maybe e s
 evalS_maybe :: Statement -> Store -> Maybe Store
 evalS_maybe w@(While e s1) s =  do expr <- (evalE_maybe e s) ; case expr of
                                         (BoolVal True, str)  -> do str' <- evalS_maybe s1 str
-                                                                  evalS_maybe w str'
+                                                                   evalS_maybe w str'
                                         (BoolVal False, str) -> return str
                                         _                   -> Nothing    
 evalS_maybe Skip s             = return s
@@ -314,7 +314,7 @@ evalS_monad (For var e1 e2 s1) = do evalE_monad (Assignment var e1) --Problem 6
                                                                expr'  <- evalE_monad (BinOp Plus e1 (Val(IntVal 1)))
                                                                evalS_monad (For var (Val expr') e2 s1)
                                            _             -> error "Not an Int"
-                                           
+
 miniprog :: Imperative Value
 miniprog = do
             setVar "x" (IntVal 2)
