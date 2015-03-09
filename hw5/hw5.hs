@@ -162,8 +162,6 @@ runMonad input = proc (parse stmtParser "" input)
     where proc (Right x) = snd `fmap` runImperative (evalS_monad x) empty
           proc _         = Nothing
 
-
-
 --Homework 5
 --Problem 1:
 instance Show Value where
@@ -316,6 +314,7 @@ evalS_monad (For var e1 e2 s1) = do evalE_monad (Assignment var e1) --Problem 6
                                                                expr'  <- evalE_monad (BinOp Plus e1 (Val(IntVal 1)))
                                                                evalS_monad (For var (Val expr') e2 s1)
                                            _             -> error "Not an Int"
+                                           
 miniprog :: Imperative Value
 miniprog = do
             setVar "x" (IntVal 2)
