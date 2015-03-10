@@ -218,8 +218,7 @@ evalS w@(While e s1) s = case (evalE e s) of
                        _                  -> error "Condition must be a BoolVal"
 evalS Skip s             = s
 evalS (Expr e) s         = snd (evalE e s)
-evalS (Sequence s1 s2) s = evalS s2 st where
-                           st = (evalS s1 s)
+evalS (Sequence s1 s2) s = let st = (evalS s1 s) in evalS s2 st
 evalS (If e s1 s2) s     = case (evalE e s) of
                            (BoolVal True,str)  -> (evalS s1 str)
                            (BoolVal False,str) -> (evalS s2 str)
@@ -232,9 +231,9 @@ evalS (For var e1 e2 s1) s = let str = evalS s1 str' --Problem 6
                                                   (IntVal z, str') -> (z, str')
                                                   _                -> error "First value in for loop not an Int"
                                  expr = Val (IntVal (frst + 1))
-                                in if lst >= frst then
+                                 in if lst >= frst then
                                      evalS(For var expr e2 s1) str
-                                else str'
+                                 else str'
 --Problem 4
 evalE_maybe :: Expression -> Store -> Maybe (Value, Store)
 evalE_maybe (BinOp o a b) s = do (a',s') <- evalE_maybe a s
@@ -243,7 +242,7 @@ evalE_maybe (BinOp o a b) s = do (a',s') <- evalE_maybe a s
 evalE_maybe (Var x) s = do val <- (Data.Map.lookup x s) ; return (val, s)
 evalE_maybe (Val v) s = Just (v, s)
 evalE_maybe (Assignment x e) s = do (val, str) <- evalE_maybe e s
-                                    return (val, (Data.Map.insert x val str))
+                                    let str' = (Data.Map.insert x val str) in return (val, str')
                                       
 
 evalS_maybe :: Statement -> Store -> Maybe Store
@@ -313,7 +312,7 @@ evalS_monad (For var e1 e2 s1) = do evalE_monad (Assignment var e1) --Problem 6
                                            (BoolVal True)  -> return ()
                                            (BoolVal False) -> do evalS_monad s1
                                                                  expr'  <- evalE_monad (BinOp Plus e1 (Val(IntVal 1)))
-                                                                 evalS_monad (For var (Val expr') e2 s1)
+                                                                 let f = For var (Val expr') e2 s1 in evalS_monad f
                                            _             -> error "Not an Int"
 
 miniprog :: Imperative Value
