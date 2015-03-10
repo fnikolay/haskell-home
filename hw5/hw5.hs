@@ -293,15 +293,16 @@ evalE_monad (BinOp o a b) = do a' <- evalE_monad a
 evalE_monad (Var x) = getVar x
 evalE_monad (Val v) = return v
 evalE_monad (Assignment x e) = do expr <- evalE_monad e
-                                  var <- setVar x expr; return var
+                                  setVar x expr
 
 evalS_monad :: Statement -> Imperative ()
 evalS_monad w@(While e s1) =  do expr <- (evalE_monad e) ; case expr of
                                       (BoolVal True)  -> do evalS_monad s1
+                                                            evalS_monad w
                                       (BoolVal False) -> return ()
                                       _               -> error "Condition must be a BoolVal"
 evalS_monad Skip         = return ()
-evalS_monad (Sequence s1 s2) = do (evalS_monad s1) ; (evalS_monad s2) ; return ()
+evalS_monad (Sequence s1 s2) = do (evalS_monad s1) ; (evalS_monad s2); return ()
 evalS_monad (Expr e) = do (evalE_monad e) ; return ()
 evalS_monad (If e s1 s2) = do expr <- evalE_monad e ; case expr of
                                 (BoolVal True)  -> evalS_monad s1
@@ -309,10 +310,10 @@ evalS_monad (If e s1 s2) = do expr <- evalE_monad e ; case expr of
                                 _               -> error "Condition must be a BoolVal" 
 evalS_monad (For var e1 e2 s1) = do evalE_monad (Assignment var e1) --Problem 6
                                     val <- evalE_monad (BinOp GreaterThan e1 e2) ; case val of
-                                           BoolVal True  -> return ()
-                                           BoolVal False -> do evalS_monad s1
-                                                               expr'  <- evalE_monad (BinOp Plus e1 (Val(IntVal 1)))
-                                                               evalS_monad (For var (Val expr') e2 s1)
+                                           (BoolVal True)  -> return ()
+                                           (BoolVal False) -> do evalS_monad s1
+                                                                 expr'  <- evalE_monad (BinOp Plus e1 (Val(IntVal 1)))
+                                                                 evalS_monad (For var (Val expr') e2 s1)
                                            _             -> error "Not an Int"
 
 miniprog :: Imperative Value

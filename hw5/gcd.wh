@@ -1,0 +1,18 @@
+a = 12872;
+b = 72384;
+notDone = true;
+
+while notDone do
+  if a < b then
+    b = b - a
+  else
+    a = a - b
+  end;
+  if a == b then
+    notDone = false
+  else
+    notDone = true
+  end
+end;
+
+gcd = a
